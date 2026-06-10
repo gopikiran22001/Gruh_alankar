@@ -7,6 +7,7 @@ blueprints, error handlers, and middleware.
 
 from __future__ import annotations
 
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -58,9 +59,14 @@ def create_app(testing: bool = False) -> Flask:
     app.config["UPLOAD_DIR"] = str(upload_dir)
 
     # ── CORS ──
+    # Allow requests from the Vite dev server and any configured frontend origin.
+    # CORS_ORIGINS env var allows overriding in production (comma-separated list).
+    raw_origins = os.environ.get("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173")
+    allowed_origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
+
     CORS(
         app,
-        resources={r"/api/*": {"origins": "*"}},
+        resources={r"/api/*": {"origins": allowed_origins}},
         supports_credentials=True,
     )
 
