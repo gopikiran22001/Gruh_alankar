@@ -4,7 +4,12 @@ Minimal Flask app test without complex dependencies.
 Tests core functionality: MongoDB, Redis, ChromaDB, JWT.
 """
 
+import os
 import sys
+
+# Disable ChromaDB telemetry FIRST before any other imports
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
+
 sys.path.append('.')
 
 from flask import Flask, jsonify

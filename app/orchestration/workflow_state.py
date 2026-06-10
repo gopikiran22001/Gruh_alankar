@@ -7,9 +7,17 @@ This is the shared state passed between all nodes in the graph.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from typing_extensions import TypedDict
+
+
+def merge_agent_results(left: Dict[str, Dict[str, Any]], right: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    """Merge agent results dictionaries."""
+    merged = dict(left) if left else {}
+    if right:
+        merged.update(right)
+    return merged
 
 
 class WorkflowState(TypedDict, total=False):
@@ -42,11 +50,12 @@ class WorkflowState(TypedDict, total=False):
     preferences: Dict[str, Any]
 
     # ── Context ──
-    chat_history: List[Dict[str, str]]
+    chat_history: List[str]
     memory_context: Dict[str, Any]
 
     # ── Agent Results (keyed by agent_name) ──
-    agent_results: Dict[str, Dict[str, Any]]
+    # Using custom merge function for concurrent updates
+    agent_results: Annotated[Dict[str, Dict[str, Any]], merge_agent_results]
 
     # ── Current Execution ──
     current_task_id: str

@@ -30,6 +30,10 @@ def create_app(testing: bool = False) -> Flask:
     Returns:
         Configured Flask application instance.
     """
+    # Disable ChromaDB telemetry FIRST before any imports
+    import os
+    os.environ["ANONYMIZED_TELEMETRY"] = "False"
+    
     # Initialize logging first
     setup_logging()
 

@@ -24,16 +24,17 @@ class AgentName:
     MEMORY = "memory_agent"
     VOICE = "voice_agent"
     CRITIC = "critic_agent"
+    IMAGE_GEN = "image_generation_agent"
 
     ALL = [
         SUPERVISOR, BUDDY, VISION, DESIGN, FURNITURE,
-        WEB, BUDGET, BOOKING, MEMORY, VOICE, CRITIC,
+        WEB, BUDGET, BOOKING, MEMORY, VOICE, CRITIC, IMAGE_GEN,
     ]
 
     # Agents the Supervisor can dispatch (excludes Supervisor itself)
     DISPATCHABLE = [
         BUDDY, VISION, DESIGN, FURNITURE,
-        WEB, BUDGET, BOOKING, MEMORY, VOICE, CRITIC,
+        WEB, BUDGET, BOOKING, MEMORY, VOICE, CRITIC, IMAGE_GEN,
     ]
 
 

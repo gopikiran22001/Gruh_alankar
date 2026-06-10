@@ -136,6 +136,7 @@ def initialize_agents() -> AgentRegistry:
     from app.agents.voice_agent import VoiceAgent
     from app.agents.critic_agent import CriticAgent
     from app.agents.supervisor_agent import SupervisorAgent
+    from app.agents.image_generation_agent import ImageGenerationAgent
 
     agents: List[BaseAgent] = [
         BuddyAgent(),
@@ -149,6 +150,7 @@ def initialize_agents() -> AgentRegistry:
         VoiceAgent(),
         CriticAgent(),
         SupervisorAgent(),
+        ImageGenerationAgent(),
     ]
 
     for agent in agents:

@@ -50,23 +50,51 @@ def create_agent_node(agent_name: str, task_config: Dict[str, Any]):
             },
         )
 
-        # Execute the agent (run async in sync context for LangGraph)
+        # Execute the agent - handle both sync and async contexts
         try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
+            # Try to get the current running loop
+            try:
+                loop = asyncio.get_running_loop()
+                # We're in an async context (Flask), run in thread
                 import concurrent.futures
-                with concurrent.futures.ThreadPoolExecutor() as pool:
-                    result = pool.submit(
-                        asyncio.run, agent.run(task)
-                    ).result()
-            else:
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(asyncio.run, agent.run(task))
+                    result = future.result(timeout=300)  # 5 minute timeout
+            except RuntimeError:
+                # No running loop, safe to create new one
                 result = asyncio.run(agent.run(task))
-        except RuntimeError:
-            result = asyncio.run(agent.run(task))
+        except concurrent.futures.TimeoutError:
+            logger.error(
+                "agent_node_timeout",
+                agent=agent_name,
+                task_id=task_config.get("task_id")
+            )
+            from app.agents.schemas import AgentResult
+            result = AgentResult(
+                task_id=task.task_id,
+                agent_name=agent_name,
+                status=TaskStatusEnum.FAILED,
+                errors=["Agent execution timeout after 5 minutes"]
+            )
+        except Exception as e:
+            # Handle execution errors gracefully
+            logger.error(
+                "agent_node_execution_error",
+                agent=agent_name,
+                task_id=task_config.get("task_id"),
+                error=str(e)
+            )
+            # Create a failed result
+            from app.agents.schemas import AgentResult
+            result = AgentResult(
+                task_id=task.task_id,
+                agent_name=agent_name,
+                status=TaskStatusEnum.FAILED,
+                errors=[f"Execution error: {str(e)}"]
+            )
 
         # Update state with results
-        agent_results = dict(state.get("agent_results", {}))
-        agent_results[agent_name] = result.model_dump()
+        agent_results = {agent_name: result.model_dump()}
 
         tasks_completed = list(state.get("tasks_completed", []))
         tasks_failed = list(state.get("tasks_failed", []))
@@ -83,7 +111,7 @@ def create_agent_node(agent_name: str, task_config: Dict[str, Any]):
         total_tokens += result.token_usage.get("total_tokens", 0)
 
         update: Dict[str, Any] = {
-            "agent_results": agent_results,
+            "agent_results": agent_results,  # Will be merged via custom reducer
             "tasks_completed": tasks_completed,
             "tasks_failed": tasks_failed,
             "errors": errors,

@@ -77,6 +77,15 @@ class ChromaDBSettings(BaseSettings):
     PORT: int = Field(alias="CHROMADB_PORT", default=8000)
     PERSIST_DIR: str = Field(alias="CHROMADB_PERSIST_DIR", default="./data/chromadb")
 
+    @field_validator("PERSIST_DIR")
+    @classmethod
+    def ensure_absolute_path(cls, v: str) -> str:
+        """Convert relative paths to absolute based on BASE_DIR."""
+        if not Path(v).is_absolute():
+            v = str(BASE_DIR / v)
+        Path(v).mkdir(parents=True, exist_ok=True)
+        return v
+
     @property
     def use_cloud_client(self) -> bool:
         """Check if cloud client should be used based on available credentials."""
@@ -164,6 +173,15 @@ class GroqSettings(BaseSettings):
 
 
 
+class ImageGenSettings(BaseSettings):
+    """Image generation model endpoints."""
+
+    model_config = SettingsConfigDict(env_prefix="", env_file=".env", extra="ignore")
+
+    SDXL_ENDPOINT: str = Field(default="http://localhost:8004/v1/image/generate")
+    CONTROLNET_ENDPOINT: str = Field(default="http://localhost:8004/v1/image/controlnet")
+
+
 class VisionSettings(BaseSettings):
     """Vision model serving endpoints."""
 
@@ -194,6 +212,9 @@ class StorageSettings(BaseSettings):
     @field_validator("UPLOAD_DIR")
     @classmethod
     def ensure_upload_dir(cls, v: str) -> str:
+        # Convert to absolute path relative to BASE_DIR
+        if not Path(v).is_absolute():
+            v = str(BASE_DIR / v)
         Path(v).mkdir(parents=True, exist_ok=True)
         return v
 
@@ -238,6 +259,7 @@ class Settings:
         self._deepseek: DeepSeekSettings | None = None
         self._embedding: EmbeddingSettings | None = None
         self._groq: GroqSettings | None = None
+        self._image_gen: ImageGenSettings | None = None
         self._vision: VisionSettings | None = None
         self._voice: VoiceSettings | None = None
         self._storage: StorageSettings | None = None
@@ -327,6 +349,12 @@ class Settings:
         if self._groq is None:
             self._groq = GroqSettings()
         return self._groq
+
+    @property
+    def image_gen(self) -> ImageGenSettings:
+        if self._image_gen is None:
+            self._image_gen = ImageGenSettings()
+        return self._image_gen
 
     @property
     def vision(self) -> VisionSettings:

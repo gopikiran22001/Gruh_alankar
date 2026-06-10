@@ -7,7 +7,11 @@ design memory, and style memory using BGE-M3 embeddings.
 
 from __future__ import annotations
 
+import os
 from typing import Any, Dict, List, Optional
+
+# Disable ChromaDB telemetry BEFORE importing chromadb
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
 
 import chromadb
 from chromadb.api import ClientAPI
@@ -61,12 +65,18 @@ class VectorStoreManager:
                 )
             else:
                 # Use local persistent client
-                import os
                 persist_dir = settings.chromadb.PERSIST_DIR
                 os.makedirs(persist_dir, exist_ok=True)
                 
+                # Create settings with telemetry disabled
+                chroma_settings = chromadb.config.Settings(
+                    anonymized_telemetry=False,
+                    allow_reset=True
+                )
+                
                 self._client = chromadb.PersistentClient(
-                    path=persist_dir
+                    path=persist_dir,
+                    settings=chroma_settings
                 )
                 logger.info(
                     "chromadb_local_connected",

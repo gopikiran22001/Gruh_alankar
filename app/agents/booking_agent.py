@@ -124,6 +124,9 @@ class BookingAgent(BaseAgent):
             items=len(products),
         )
 
+        # Fetch the complete booking with all fields including timestamps
+        created_booking = find_by_id(MongoCollection.BOOKINGS, booking_id)
+
         return AgentResult(
             task_id=task.task_id,
             agent_name=self.name,
@@ -136,6 +139,8 @@ class BookingAgent(BaseAgent):
                 "delivery_charge_inr": delivery_charge,
                 "total_inr": round(total, 2),
                 "item_count": len(products),
+                "booking": created_booking,  # Include full booking details
+                "created_at": created_booking.get("created_at") if created_booking else None,
             },
         )
 

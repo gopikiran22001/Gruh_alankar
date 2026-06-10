@@ -19,6 +19,8 @@ def register_blueprints(app: Flask) -> None:
     from app.api.web import web_bp
     from app.api.voice import voice_bp
     from app.api.projects import projects_bp
+    from app.api.design_studio import design_studio_bp
+    from app.api.uploads import uploads_bp
 
     blueprints = [
         (auth_bp, "/api/auth"),
@@ -31,6 +33,8 @@ def register_blueprints(app: Flask) -> None:
         (web_bp, "/api/web"),
         (voice_bp, "/api/voice"),
         (projects_bp, "/api"),
+        (design_studio_bp, "/api/design-studio"),
+        (uploads_bp, "/api/uploads"),
     ]
 
     for blueprint, prefix in blueprints:

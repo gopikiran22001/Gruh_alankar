@@ -35,6 +35,19 @@ def create_booking():
         metadata={"user_id": user_id},
     )
     result = asyncio.run(agent.run(task))
+    
+    # If booking created successfully, fetch the full booking details
+    if result.is_success and result.data.get("booking_id"):
+        from app.database.mongo import find_by_id
+        from config.constants import MongoCollection
+        
+        booking_id = result.data.get("booking_id")
+        full_booking = find_by_id(MongoCollection.BOOKINGS, booking_id)
+        
+        if full_booking:
+            # Add the full booking details to the response
+            result.data["booking"] = full_booking
+    
     status_code = 201 if result.is_success else 400
     return api_response(data=result.data, status_code=status_code)
 
