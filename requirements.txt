@@ -1,0 +1,84 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Gruha Alankara - Backend Dependencies
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# --- Flask & Web Framework ---
+Flask==3.1.1
+flask-cors==5.0.1
+flask-jwt-extended==4.7.1
+flask-restx==1.3.0
+Werkzeug==3.1.3
+gunicorn==23.0.0
+
+# --- Database ---
+pymongo==4.12.1
+pymongo[srv]==4.12.1
+redis==5.2.1
+
+# --- Vector Database ---
+# ChromaDB may have issues with Python 3.13+, use flexible version:
+chromadb>=0.4.0,<0.7.0
+
+# --- Task Queue ---
+celery==5.4.0
+celery[redis]==5.4.0
+
+# --- LangChain / LangGraph (compatible versions) ---
+langchain==0.3.25
+langchain-core==0.3.59
+langchain-community==0.3.24
+langgraph==0.2.40
+
+# --- LLM Clients ---
+openai==1.82.0
+httpx==0.28.1
+
+# --- Embeddings ---
+sentence-transformers>=2.0.0
+
+# --- Vision Models (served externally, clients only) ---
+opencv-python-headless==4.11.0.86
+Pillow==11.2.1
+
+# --- Voice ---
+faster-whisper==1.1.1
+# Note: For TTS, choose one of the following based on your Python version:
+# For Python 3.13+, use a simpler TTS solution:
+gTTS>=2.3.0  # Google Text-to-Speech (simpler, works with latest Python)
+# OR if you need advanced TTS features and can use Python 3.10-3.12:
+# coqui-tts>=0.22.0  # Advanced TTS (requires Python 3.10-3.12)
+
+# --- Web Scraping ---
+playwright==1.52.0
+beautifulsoup4==4.13.4
+requests==2.32.3
+lxml==5.4.0
+
+# --- Data Validation ---
+pydantic==2.11.3
+pydantic-settings==2.9.1
+marshmallow==3.26.1
+
+# --- Security ---
+bcrypt==4.3.0
+PyJWT==2.10.1
+
+# --- Logging & Observability ---
+structlog==25.1.0
+python-json-logger==3.3.0
+
+# --- Utilities ---
+python-dotenv==1.1.0
+tenacity==9.1.2
+uuid6>=2024.1.12
+
+# --- Testing ---
+pytest==8.3.5
+pytest-cov==6.1.1
+pytest-asyncio==0.25.3
+pytest-mock==3.14.0
+mongomock==4.3.0
+fakeredis==2.26.2
+
+# --- Type Checking ---
+mypy==1.15.0
