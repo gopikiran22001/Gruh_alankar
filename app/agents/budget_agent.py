@@ -12,9 +12,9 @@ from typing import Any, Dict, List
 
 from app.agents.base_agent import BaseAgent
 from app.agents.schemas import AgentResult, AgentTask, TaskStatusEnum
-from app.llm.model_factory import ModelFactory
 from config.constants import AgentName
 from config.logging_config import get_logger
+from config.settings import settings
 
 logger = get_logger(__name__)
 
@@ -51,7 +51,12 @@ class BudgetAgent(BaseAgent):
 
     def __init__(self) -> None:
         super().__init__()
-        self._llm = ModelFactory.create_chat_client(model_name="llama-3.1-8b-instant")
+        from app.llm.groq_client import GroqClient
+        self._llm = GroqClient(
+            api_key=settings.groq_budget.API_KEY,
+            api_url=settings.groq_budget.API_URL,
+            model=settings.groq_budget.MODEL,
+        )
 
     def _get_capabilities(self) -> List[str]:
         return [

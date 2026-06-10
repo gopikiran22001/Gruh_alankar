@@ -1,7 +1,7 @@
 """
 Gruha Alankara — Critic Agent
 
-Validates outputs from other agents using DeepSeek-R1 reasoning.
+Validates outputs from other agents using Groq Reasoning.
 Detects hallucinations, budget violations, style inconsistencies,
 and determines if retries are needed.
 """
@@ -19,7 +19,7 @@ from app.agents.schemas import (
     TaskStatusEnum,
     ValidationIssue,
 )
-from app.llm.deepseek_client import DeepSeekClient
+from app.llm.groq_reasoning_client import GroqReasoningClient
 from config.constants import AgentName
 from config.logging_config import get_logger
 
@@ -35,18 +35,20 @@ Your job is to validate outputs from specialized agents and ensure:
 5. **Practicality**: Suggestions must be feasible for the given room/space
 6. **No Hallucinations**: Product recommendations should reference real brands/stores
 
-Scoring:
-- 0.9-1.0: Excellent, no issues
-- 0.7-0.89: Good, minor improvements possible
-- 0.5-0.69: Acceptable, some issues need addressing
-- Below 0.5: Needs retry
+Scoring (BE GENEROUS - Only fail critically bad results):
+- 0.8-1.0: Excellent, approve immediately
+- 0.5-0.79: Good enough, approve with minor notes
+- 0.3-0.49: Acceptable but needs improvement, still approve
+- Below 0.3: Critical issues, needs retry
+
+IMPORTANT: Set is_approved to true for any score >= 0.3. Only reject scores below 0.3.
 
 You MUST respond with structured JSON."""
 
 
 class CriticAgent(BaseAgent):
     """
-    Quality assurance agent using DeepSeek-R1 reasoning.
+    Quality assurance agent using Groq Reasoning.
 
     Validates multi-agent outputs and determines if retries are needed.
     Acts as the quality gate before final response generation.
@@ -63,7 +65,7 @@ class CriticAgent(BaseAgent):
 
     def __init__(self) -> None:
         super().__init__()
-        self._llm = DeepSeekClient()
+        self._llm = GroqReasoningClient()
 
     def _get_capabilities(self) -> List[str]:
         return [
@@ -140,6 +142,14 @@ Analyze each agent's output and respond with JSON:
 
         try:
             feedback_data = response.parse_json()
+            # Ensure is_approved is set correctly based on score
+            if "overall_score" in feedback_data and "is_approved" not in feedback_data:
+                feedback_data["is_approved"] = feedback_data["overall_score"] >= 0.3
+            elif "overall_score" in feedback_data:
+                # Override is_approved if score is acceptable
+                if feedback_data["overall_score"] >= 0.3:
+                    feedback_data["is_approved"] = True
+            
             feedback = CriticFeedback(
                 workflow_id=task.metadata.get("workflow_id", ""),
                 **feedback_data,

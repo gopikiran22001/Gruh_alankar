@@ -147,7 +147,7 @@ class DynamicGraphBuilder:
     def build_graph_with_critic(
         self,
         plan: Dict[str, Any],
-        max_retries: int = 3,
+        max_retries: int = 1,
     ) -> StateGraph:
         """
         Build a graph with critic validation and retry loop.
@@ -211,10 +211,13 @@ class DynamicGraphBuilder:
             """Determine next step based on critic validation."""
             feedback = state.get("critic_feedback", {})
             is_approved = feedback.get("is_approved", True)
+            overall_score = feedback.get("overall_score", 1.0)
             retry_count = state.get("retry_count", 0)
             max_r = state.get("max_retries", max_retries)
 
-            if is_approved or retry_count >= max_r:
+            # Only retry if score is critically low (<0.5) and below max retries
+            # This prevents unnecessary retries for acceptable results
+            if is_approved or overall_score >= 0.5 or retry_count >= max_r:
                 return "generate_response"
             else:
                 # Re-run from the first failed task

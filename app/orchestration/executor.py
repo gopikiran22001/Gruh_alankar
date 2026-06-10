@@ -400,11 +400,13 @@ class WorkflowExecutor:
     @staticmethod
     def _is_complex_workflow(tasks: List[Dict[str, Any]]) -> bool:
         """Determine if a workflow needs critic validation."""
-        if len(tasks) <= 2:
+        # Increase threshold to reduce unnecessary critic validation
+        if len(tasks) <= 4:
             return False
         agent_names = {t.get("agent_name") for t in tasks}
         complex_agents = {"design_agent", "furniture_agent", "budget_agent", "booking_agent"}
-        return bool(agent_names & complex_agents)
+        # Only use critic if there are multiple complex agents
+        return len(agent_names & complex_agents) >= 2
 
     @staticmethod
     def _sanitize_results(results: Dict[str, Any]) -> Dict[str, Any]:

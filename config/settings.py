@@ -83,8 +83,58 @@ class ChromaDBSettings(BaseSettings):
         return bool(self.API_KEY and self.TENANT and self.DATABASE)
 
 
+class GroqBuddySettings(BaseSettings):
+    """Groq API configuration for Buddy Agent."""
+
+    model_config = SettingsConfigDict(env_prefix="GROQ_BUDDY_", env_file=".env", extra="ignore")
+
+    API_KEY: str = Field(alias="GROQ_BUDDY_API_KEY", default="")
+    API_URL: str = Field(alias="GROQ_BUDDY_API_URL", default="https://api.groq.com/openai/v1")
+    MODEL: str = Field(alias="GROQ_BUDDY_MODEL", default="llama-3.3-70b-versatile")
+
+
+class GroqDesignSettings(BaseSettings):
+    """Groq API configuration for Design Agent."""
+
+    model_config = SettingsConfigDict(env_prefix="GROQ_DESIGN_", env_file=".env", extra="ignore")
+
+    API_KEY: str = Field(alias="GROQ_DESIGN_API_KEY", default="")
+    API_URL: str = Field(alias="GROQ_DESIGN_API_URL", default="https://api.groq.com/openai/v1")
+    MODEL: str = Field(alias="GROQ_DESIGN_MODEL", default="llama-3.3-70b-versatile")
+
+
+class GroqFurnitureSettings(BaseSettings):
+    """Groq API configuration for Furniture Agent."""
+
+    model_config = SettingsConfigDict(env_prefix="GROQ_FURNITURE_", env_file=".env", extra="ignore")
+
+    API_KEY: str = Field(alias="GROQ_FURNITURE_API_KEY", default="")
+    API_URL: str = Field(alias="GROQ_FURNITURE_API_URL", default="https://api.groq.com/openai/v1")
+    MODEL: str = Field(alias="GROQ_FURNITURE_MODEL", default="llama-3.1-8b-instant")
+
+
+class GroqBudgetSettings(BaseSettings):
+    """Groq API configuration for Budget Agent."""
+
+    model_config = SettingsConfigDict(env_prefix="GROQ_BUDGET_", env_file=".env", extra="ignore")
+
+    API_KEY: str = Field(alias="GROQ_BUDGET_API_KEY", default="")
+    API_URL: str = Field(alias="GROQ_BUDGET_API_URL", default="https://api.groq.com/openai/v1")
+    MODEL: str = Field(alias="GROQ_BUDGET_MODEL", default="llama-3.1-8b-instant")
+
+
+class GroqReasoningSettings(BaseSettings):
+    """Groq Reasoning API configuration (Supervisor + Critic)."""
+
+    model_config = SettingsConfigDict(env_prefix="GROQ_REASONING_", env_file=".env", extra="ignore")
+
+    API_KEY: str = Field(alias="GROQ_REASONING_API_KEY", default="")
+    API_URL: str = Field(alias="GROQ_REASONING_API_URL", default="https://api.groq.com/openai/v1")
+    MODEL: str = Field(alias="GROQ_REASONING_MODEL", default="llama-3.3-70b-versatile")
+
+
 class DeepSeekSettings(BaseSettings):
-    """DeepSeek-R1 API configuration (Supervisor + Critic)."""
+    """DeepSeek-R1 API configuration (Deprecated - Use GroqReasoningSettings)."""
 
     model_config = SettingsConfigDict(env_prefix="DEEPSEEK_", env_file=".env", extra="ignore")
 
@@ -180,6 +230,11 @@ class Settings:
         self._redis: RedisSettings | None = None
         self._celery: CelerySettings | None = None
         self._chromadb: ChromaDBSettings | None = None
+        self._groq_buddy: GroqBuddySettings | None = None
+        self._groq_design: GroqDesignSettings | None = None
+        self._groq_furniture: GroqFurnitureSettings | None = None
+        self._groq_budget: GroqBudgetSettings | None = None
+        self._groq_reasoning: GroqReasoningSettings | None = None
         self._deepseek: DeepSeekSettings | None = None
         self._embedding: EmbeddingSettings | None = None
         self._groq: GroqSettings | None = None
@@ -224,6 +279,36 @@ class Settings:
         if self._chromadb is None:
             self._chromadb = ChromaDBSettings()
         return self._chromadb
+
+    @property
+    def groq_buddy(self) -> GroqBuddySettings:
+        if self._groq_buddy is None:
+            self._groq_buddy = GroqBuddySettings()
+        return self._groq_buddy
+
+    @property
+    def groq_design(self) -> GroqDesignSettings:
+        if self._groq_design is None:
+            self._groq_design = GroqDesignSettings()
+        return self._groq_design
+
+    @property
+    def groq_furniture(self) -> GroqFurnitureSettings:
+        if self._groq_furniture is None:
+            self._groq_furniture = GroqFurnitureSettings()
+        return self._groq_furniture
+
+    @property
+    def groq_budget(self) -> GroqBudgetSettings:
+        if self._groq_budget is None:
+            self._groq_budget = GroqBudgetSettings()
+        return self._groq_budget
+
+    @property
+    def groq_reasoning(self) -> GroqReasoningSettings:
+        if self._groq_reasoning is None:
+            self._groq_reasoning = GroqReasoningSettings()
+        return self._groq_reasoning
 
     @property
     def deepseek(self) -> DeepSeekSettings:

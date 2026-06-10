@@ -213,10 +213,10 @@ class APIStatus:
 # Retry Defaults
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-MAX_AGENT_RETRIES = 3
+MAX_AGENT_RETRIES = 1
 MAX_LLM_RETRIES = 3
 LLM_TIMEOUT_SECONDS = 120
-SUPERVISOR_MAX_PLANNING_ITERATIONS = 5
+SUPERVISOR_MAX_PLANNING_ITERATIONS = 2
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Cache TTLs (seconds)

@@ -16,8 +16,8 @@ pymongo[srv]==4.12.1
 redis==5.2.1
 
 # --- Vector Database ---
-# ChromaDB may have issues with Python 3.13+, use flexible version:
-chromadb>=0.4.0,<0.7.0
+# ChromaDB - using 1.5.x for Cloud compatibility
+chromadb>=1.5.0,<2.0.0
 
 # --- Task Queue ---
 celery==5.4.0

@@ -11,7 +11,6 @@ from typing import Any, Dict, List, Optional
 
 import chromadb
 from chromadb.api import ClientAPI
-from chromadb.config import Settings as ChromaSettings
 
 from config.constants import VectorCollection
 from config.logging_config import get_logger
@@ -49,7 +48,7 @@ class VectorStoreManager:
         """Establish connection to ChromaDB server (cloud or local)."""
         try:
             if settings.chromadb.use_cloud_client:
-                # Use cloud client
+                # Use cloud client (ChromaDB Cloud)
                 self._client = chromadb.CloudClient(
                     api_key=settings.chromadb.API_KEY,
                     tenant=settings.chromadb.TENANT,
@@ -61,18 +60,17 @@ class VectorStoreManager:
                     database=settings.chromadb.DATABASE,
                 )
             else:
-                # Use local HTTP client
-                self._client = chromadb.HttpClient(
-                    host=settings.chromadb.HOST,
-                    port=settings.chromadb.PORT,
-                    settings=ChromaSettings(
-                        anonymized_telemetry=False,
-                    ),
+                # Use local persistent client
+                import os
+                persist_dir = settings.chromadb.PERSIST_DIR
+                os.makedirs(persist_dir, exist_ok=True)
+                
+                self._client = chromadb.PersistentClient(
+                    path=persist_dir
                 )
                 logger.info(
                     "chromadb_local_connected",
-                    host=settings.chromadb.HOST,
-                    port=settings.chromadb.PORT,
+                    path=persist_dir,
                 )
             
             # Verify connection
@@ -80,7 +78,7 @@ class VectorStoreManager:
             # Initialize collections
             self._init_collections()
         except Exception as e:
-            logger.error("chromadb_connection_failed", error=str(e))
+            logger.error("chromadb_connection_failed", error=repr(e))
             self._client = None
 
     def _init_collections(self) -> None:
@@ -97,22 +95,10 @@ class VectorStoreManager:
 
         for name in collection_names:
             try:
-                # Handle different ChromaDB versions
-                try:
-                    # Try new API first (v0.4+)
-                    self._collections[name] = self._client.get_or_create_collection(
-                        name=name,
-                        metadata={"hnsw:space": "cosine"}
-                    )
-                except Exception as e:
-                    # Fallback to older API
-                    logger.debug(f"Trying fallback collection creation for {name}: {e}")
-                    self._collections[name] = self._client.get_or_create_collection(name=name)
-                
-                logger.debug("collection_initialized", collection=name)
+                self._collections[name] = self._client.get_or_create_collection(name=name)
+                logger.info("collection_initialized", collection=name, count=self._collections[name].count())
             except Exception as e:
-                logger.error("collection_init_failed", collection=name, error=str(e))
-                # Continue with other collections even if one fails
+                logger.error("collection_init_failed", collection=name, error=repr(e))
 
     @property
     def client(self) -> ClientAPI:
@@ -123,7 +109,7 @@ class VectorStoreManager:
     def get_collection(self, name: str) -> chromadb.Collection:
         """Get a named collection."""
         if name not in self._collections:
-            raise ValueError(f"Unknown collection: {name}")
+            raise ValueError(f"Collection {name} not initialized")
         return self._collections[name]
 
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

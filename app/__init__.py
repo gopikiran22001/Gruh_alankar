@@ -116,7 +116,30 @@ def _init_extensions(app: Flask) -> None:
     except Exception as e:
         logger.warning("vector_store_connection_failed", error=str(e))
 
+    # Initialize all agents
+    from app.agents.registry import initialize_agents
+    try:
+        initialize_agents()
+        logger.info("agents_initialized")
+    except Exception as e:
+        logger.error("agents_initialization_failed", error=str(e))
+
+    # Preload models (embedding + voice)
+    try:
+        from preload_models import preload_all_models
+        preload_all_models()
+    except Exception as e:
+        logger.warning("model_preload_failed", error=str(e))
+
     logger.info("extensions_initialized")
+
+    # Print startup banner
+    from app.observability.startup_banner import print_startup_banner
+    print_startup_banner(
+        host=settings.server.HOST,
+        port=settings.server.PORT,
+        debug=settings.flask.FLASK_DEBUG
+    )
 
 
 def _register_blueprints(app: Flask) -> None:

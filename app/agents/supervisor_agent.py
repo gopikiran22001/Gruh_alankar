@@ -1,7 +1,7 @@
 """
 Gruha Alankara — Supervisor Agent
 
-The autonomous brain of the system. Uses DeepSeek-R1 reasoning to:
+The autonomous brain of the system. Uses Groq Reasoning to:
 - Understand user intent
 - Dynamically generate execution plans (DAGs)
 - Select and orchestrate agents
@@ -29,7 +29,7 @@ from app.agents.schemas import (
     TaskStatusEnum,
     WorkflowContext,
 )
-from app.llm.deepseek_client import DeepSeekClient
+from app.llm.groq_reasoning_client import GroqReasoningClient
 from config.constants import (
     AgentName,
     SUPERVISOR_MAX_PLANNING_ITERATIONS,
@@ -96,7 +96,7 @@ class SupervisorAgent(BaseAgent):
     """
     Autonomous Supervisor Agent — the reasoning brain of Gruha Alankara.
 
-    Uses DeepSeek-R1 to dynamically plan, route, and orchestrate
+    Uses Groq Reasoning to dynamically plan, route, and orchestrate
     all other agents based on user intent.
     """
 
@@ -112,7 +112,7 @@ class SupervisorAgent(BaseAgent):
 
     def __init__(self) -> None:
         super().__init__()
-        self._llm = DeepSeekClient()
+        self._llm = GroqReasoningClient()
 
     def _get_capabilities(self) -> List[str]:
         return [
